@@ -1,0 +1,20 @@
+# Spring Boot application properties
+
+# MongoDB configuration
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/explore-ai
+
+# GraphQL settings
+graphql:
+  servlet:
+    mapping: /graphql
+  tools:
+    schema:
+      location: classpath:schema.graphqls
+      it: 
+        mutations: true
+        queries: true
+  playground:
+    enabled: true

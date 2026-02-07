@@ -1,23 +1,53 @@
-# GraphQL Schema
-
-## Query
+schema {
+  query: Query
+}
 
 type Query {
-    getUser(id: ID!): User
-    listUsers: [User]
+  transactions(userId: ID!, searchParams: TransactionSearchParamsInput!): TransactionPage!
 }
 
-## Input
-
-input UserInput {
-    username: String!
-    email: String!
+"""
+Search/filter + paging inputs for querying transactions.
+"""
+input TransactionSearchParamsInput {
+  query: String
+  status: TransactionStatus
+  productName: String
+  projectNameStartsWith: String
+  nonTeamMember: Boolean! = false
+  fromDate: String
+  toDate: String
+  page: Int! = 0
+  size: Int! = 20
 }
 
-## Type
-
-type User {
-    id: ID!
-    username: String!
-    email: String!
+type TransactionPage {
+  items: [Transaction!]!
+  page: Int!
+  size: Int!
+  totalElements: Long!
+  totalPages: Int!
 }
+
+type Transaction {
+  id: ID!
+  name: String
+  status: TransactionStatus
+  projectName: String
+  productName: String
+  createdAt: String
+  teams: [Team!]!
+}
+
+type Team {
+  id: ID!
+  name: String
+}
+
+enum TransactionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+

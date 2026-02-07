@@ -1,180 +1,61 @@
-# Explore AI - GraphQL API
+# spring-graphql
 
-A Spring Boot GraphQL API for searching and managing people data from MongoDB with pagination support.
+Spring Boot microservice exposing a GraphQL endpoint to search transactions in MongoDB with a team join + `userId` entitlement filter.
 
-## Features
+## Data model (Mongo)
 
-- **GraphQL Endpoint** for searching people with filters
-- **MongoDB Integration** for data persistence
-- **Pagination Support** for large datasets
-- **GraphiQL UI** for testing queries
-- **Spring Data MongoDB** for easy data access
+- `transactions` collection
+  - `_id`: ObjectId
+  - `name`: string
+  - `status`: string (matches `TransactionStatus`)
+  - `productName`: string
+  - `createdAt`: date
+  - `teamIds`: array of ObjectId (references `teams._id`)
 
-## Prerequisites
+- `teams` collection
+  - `_id`: ObjectId
+  - `name`: string
+  - `userIds`: array of strings (users in the team)
 
-- Java 17+
-- Maven 3.6+
-- MongoDB 4.0+
-- Spring Boot 3.2.0+
+The query joins `transactions.teamIds -> teams._id` and filters to transactions where **at least one joined team contains the given `userId`**.
 
-## Project Structure
+## Run
 
-```
-src/
-├── main/
-│   ├── java/com/example/ai/
-│   │   ├── ExploreAiApplication.java
-│   │   ├── model/
-│   │   │   └── People.java
-│   │   ├── repository/
-│   │   │   └── PeopleRepository.java
-│   │   ├── service/
-│   │   │   └── PeopleService.java
-│   │   └── graphql/
-│   │       ├── controller/
-│   │       │   └── PeopleGraphQLController.java
-│   │       ├── input/
-│   │       │   └── PeopleSearch.java
-│   │       └── dto/
-│   │           └── PeoplePage.java
-│   └── resources/
-│       ├── graphql/
-│       │   └── schema.graphqls
-│       └── application.yml
-```
+1. Start MongoDB locally (default is `mongodb://localhost:27017/field`).
+2. Run the app:
 
-## Setup Instructions
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/selvakumarans/explore-ai.git
-cd explore-ai
-```
-
-### 2. Configure MongoDB
-Update `src/main/resources/application.yml` with your MongoDB connection details:
-```yaml
-spring:
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/explore-ai
-```
-
-### 3. Build the Project
-```bash
-mvn clean install
-```
-
-### 4. Run the Application
 ```bash
 mvn spring-boot:run
 ```
 
-The application will start on `http://localhost:8080/api`
+3. Open GraphiQL at `http://localhost:8080/graphiql`.
 
-## GraphQL Queries
+## GraphQL example
 
-### Access GraphiQL UI
-Navigate to: `http://localhost:8080/api/graphiql`
-
-### Search People Query
 ```graphql
 query {
-  searchPeople(
-    searchParam: {
-      peopleName: "John"
-      project: "AI"
-    }
-    page: 0
-    size: 10
+  transactions(
+    userId: "user-123",
+    searchParams: { query: "alpha", page: 0, size: 10 }
   ) {
-    content {
-      id
-      name
-      project
-      email
-      department
-    }
+    page
+    size
     totalElements
     totalPages
-    currentPage
-    pageSize
+    items {
+      id
+      name
+      status
+      productName
+      createdAt
+      teams { id name }
+    }
   }
 }
 ```
 
-### Get People by ID
-```graphql
-query {
-  getPeopleById(id: "507f1f77bcf86cd799439011") {
-    id
-    name
-    project
-    email
-    department
-  }
-}
-```
+## Entitlements
 
-### Create People Mutation
-```graphql
-mutation {
-  createPeople(people: {
-    name: "John Doe"
-    project: "AI-Project"
-    email: "john@example.com"
-    department: "Engineering"
-  }) {
-    id
-    name
-    project
-    email
-    department
-  }
-}
-}
-```
+`com.field.springgraphql.service.AllowAllEntitlementService` currently allows all users.
+Replace it with a real entitlement integration in `EntitlementService`.
 
-## API Endpoints
-
-- **GraphQL Query**: `POST /api/graphql`
-- **GraphiQL UI**: `GET /api/graphiql`
-- **Schema Printer**: `GET /api/graphql/schema`
-
-## Data Model
-
-### People Collection
-```json
-{
-  "_id": "ObjectId",
-  "name": "String",
-  "project": "String",
-  "email": "String",
-  "department": "String"
-}
-```
-
-### PeopleSearch Input
-```json
-{
-  "peopleName": "String (optional)",
-  "project": "String (optional)"
-}
-```
-
-## Dependencies
-
-- **spring-boot-starter-graphql**: GraphQL support
-- **spring-boot-starter-data-mongodb**: MongoDB integration
-- **spring-boot-starter-web**: Web framework
-- **spring-boot-devtools**: Development tools
-
-## Testing
-
-```bash
-mvn test
-```
-
-## License
-
-MIT License

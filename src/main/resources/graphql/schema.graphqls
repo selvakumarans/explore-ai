@@ -1,0 +1,23 @@
+# GraphQL Schema
+
+## Query
+
+type Query {
+    getUser(id: ID!): User
+    listUsers: [User]
+}
+
+## Input
+
+input UserInput {
+    username: String!
+    email: String!
+}
+
+## Type
+
+type User {
+    id: ID!
+    username: String!
+    email: String!
+}

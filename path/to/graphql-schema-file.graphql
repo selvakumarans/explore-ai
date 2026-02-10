@@ -1,0 +1,30 @@
+type Query {
+    searchPeople(
+        searchParam: PeopleSearchInput!
+        page: Int!
+        size: Int!
+    ): PeoplePage!
+}
+
+input PeopleSearchInput {
+    peopleName: String
+    project: String
+}
+
+type People {
+    id: ID!
+    name: String!
+    project: String!
+    email: String
+    department: String
+}
+
+type PeoplePage {
+    content: [People!]!
+    totalElements: Long!
+    totalPages: Int!
+    currentPage: Int!
+    pageSize: Int!
+    hasNext: Boolean!
+    hasPrevious: Boolean!
+}
